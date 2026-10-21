@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PagBem - Gestão Bancária & MongoDB NoSQL</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">P</div>
+      <div class="brand-text">
+        <h2>PagBem</h2>
+        <span>Sistema NoSQL MongoDB</span>
+      </div>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item active" data-view="dashboard">
+        <button><span class="icon">📊</span> <span class="nav-text">Dashboard Geral</span></button>
+      </li>
+      <li class="nav-item" data-view="clientes">
+        <button><span class="icon">👥</span> <span class="nav-text">Clientes</span></button>
+      </li>
+      <li class="nav-item" data-view="contas">
+        <button><span class="icon">💳</span> <span class="nav-text">Contas Bancárias</span></button>
+      </li>
+      <li class="nav-item" data-view="transacoes">
+        <button><span class="icon">💸</span> <span class="nav-text">Transações / Extrato</span></button>
+      </li>
+      <li class="nav-item" data-view="emprestimos">
+        <button><span class="icon">📋</span> <span class="nav-text">Empréstimos</span></button>
+      </li>
+      <li class="nav-item" data-view="relatorios">
+        <button><span class="icon">📈</span> <span class="nav-text">Relatórios & Agregações</span></button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="db-badge">
+        <span class="pulse"></span> MongoDB Conectado
+      </div>
+      <div>Coleções: <b>4 Coleções Reais</b></div>
+      <div style="font-size: 0.7rem; opacity: 0.7;">IFSC Gaspar - NoSQL</div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+    <!-- Top Header -->
+    <header class="header">
+      <div class="header-title">
+        <h1 id="page-title">Dashboard Bancário</h1>
+        <p id="page-subtitle">Visão executiva em tempo real com dados agregados do MongoDB</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" id="btn-seed" title="Recarregar dados iniciais de demonstração">
+          🔄 Recarregar Seed Demo
+        </button>
+      </div>
+    </header>
+
+    <div class="content-container">
+
+      <!-- ============================================== -->
+      <!-- SEÇÃO 1: DASHBOARD -->
+      <!-- ============================================== -->
+      <section id="view-dashboard" class="view-section active">
+        <!-- Estatísticas Globais -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Clientes Ativos</span>
+              <span class="stat-icon">👥</span>
+            </div>
+            <div class="stat-value" id="dash-total-clientes">...</div>
+            <div class="stat-desc">Base cadastrada no MongoDB</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Contas Bancárias</span>
+              <span class="stat-icon">💳</span>
+            </div>
+            <div class="stat-value" id="dash-total-contas">...</div>
+            <div class="stat-desc">Contas ativas e operacionais</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Saldo Total Custodiado</span>
+              <span class="stat-icon">💰</span>
+            </div>
+            <div class="stat-value" id="dash-saldo-total" style="color: #10b981;">...</div>
+            <div class="stat-desc">Calculado via $group e $sum</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Saldo Médio por Conta</span>
+              <span class="stat-icon">📊</span>
+            </div>
+            <div class="stat-value" id="dash-saldo-medio">...</div>
+            <div class="stat-desc">Métrica agregada com $avg</div>
+          </div>
+        </div>
+
+        <!-- Segundo Grid: Empréstimos e Movimentações -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Transações Registradas</span>
+              <span class="stat-icon">⚡</span>
+            </div>
+            <div class="stat-value" id="dash-total-transacoes">...</div>
+            <div class="stat-desc">Entradas, saídas e transferências</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Empréstimos Concedidos</span>
+              <span class="stat-icon">📝</span>
+            </div>
+            <div class="stat-value" id="dash-total-emprestimos">...</div>
+            <div class="stat-desc">Contratos no MongoDB</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Volume Emprestado</span>
+              <span class="stat-icon">📑</span>
+            </div>
+            <div class="stat-value" id="dash-volume-emprestado" style="color: #60a5fa;">...</div>
+            <div class="stat-desc">Total contratado por clientes</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Maior Saldo Individual</span>
+              <span class="stat-icon">🏆</span>
+            </div>
+            <div class="stat-value" id="dash-maior-saldo">...</div>
+            <div class="stat-desc">Calculado via $max no campo valor</div>
+          </div>
+        </div>
+
+        <!-- Painel: Saldos Agrupados por Tipo de Conta -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>🏛️ Distribuição Consolidada por Tipo de Conta ($group & $sum)</span>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tipo de Conta</th>
+                  <th>Qtd. Contas</th>
+                  <th>Saldo Acumulado</th>
+                  <th>Saldo Médio</th>
+                  <th>Maior Saldo</th>
+                </tr>
+              </thead>
+              <tbody id="dash-tabela-tipos">
+                <tr>
+                  <td colspan="5">Carregando dados...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Painel: Últimas Transações do Sistema -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>⚡ Últimas Transações Registradas em Tempo Real</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="navigateTo('transacoes')">Ver Extrato Completo</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Data</th>
+                  <th>Tipo</th>
+                  <th>Conta Origem</th>
+                  <th>Descrição</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="dash-tabela-transacoes">
+                <tr>
+                  <td colspan="7">Carregando transações...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- SEÇÃO 2: CLIENTES -->
+      <!-- ============================================== -->
+      <section id="view-clientes" class="view-section">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>👥 Clientes Cadastrados (Coleção <code>Clientes</code>)</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" id="filtro-cliente-busca" class="form-control" placeholder="Buscar por Nome ou CPF..."
+                style="width: 250px;">
+              <button class="btn btn-primary" id="btn-novo-cliente">+ Novo Cliente</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome Completo</th>
+                  <th>CPF</th>
+                  <th>Profissão</th>
+                  <th>Gênero</th>
+                  <th>Estado Civil</th>
+                  <th>Renda Mensal</th>
+                  <th>Seguros Ativos</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-clientes">
+                <tr>
+                  <td colspan="8">Carregando clientes...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- SEÇÃO 3: CONTAS BANCÁRIAS -->
+      <!-- ============================================== -->
+      <section id="view-contas" class="view-section">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>💳 Contas Bancárias (Coleção <code>Contas</code>)</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <select id="filtro-conta-tipo" class="form-control" style="width: 180px;">
+                <option value="">Todos os tipos</option>
+                <option value="Conta corrente">Conta corrente</option>
+                <option value="Conta poupança">Conta poupança</option>
+                <option value="Conta salário">Conta salário</option>
+              </select>
+              <button class="btn btn-primary" id="btn-nova-conta">+ Abrir Nova Conta</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Número Conta</th>
+                  <th>Agência</th>
+                  <th>Titular</th>
+                  <th>CPF</th>
+                  <th>Tipo</th>
+                  <th>Limite Especial</th>
+                  <th>Saldo Atual</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-contas">
+                <tr>
+                  <td colspan="9">Carregando contas...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- SEÇÃO 4: TRANSAÇÕES / EXTRATO -->
+      <!-- ============================================== -->
+      <section id="view-transacoes" class="view-section">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>💸 Movimentações e Extrato (Coleção <code>Transacoes</code>)</span>
+            </div>
+            <button class="btn btn-success" id="btn-nova-transacao">+ Realizar Movimentação</button>
+          </div>
+
+          <!-- Filtros de Extrato -->
+          <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+            <input type="text" id="filtro-transacao-conta" class="form-control"
+              placeholder="Filtrar por Conta (ex: 10001-5)" style="width: 220px;">
+            <select id="filtro-transacao-tipo" class="form-control" style="width: 180px;">
+              <option value="">Todos os tipos</option>
+              <option value="Depósito">Depósito</option>
+              <option value="Saque">Saque</option>
+              <option value="PIX">PIX</option>
+              <option value="Transferência">Transferência</option>
+              <option value="Pagamento">Pagamento</option>
+            </select>
+            <button class="btn btn-secondary" id="btn-filtrar-transacoes">Filtrar Extrato</button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Data/Hora</th>
+                  <th>Tipo</th>
+                  <th>Natureza</th>
+                  <th>Conta Origem</th>
+                  <th>Conta Destino</th>
+                  <th>Descrição</th>
+                  <th>Valor</th>
+                  <th>Saldo Pós</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-transacoes">
+                <tr>
+                  <td colspan="9">Carregando transações...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- SEÇÃO 5: EMPRÉSTIMOS -->
+      <!-- ============================================== -->
+      <section id="view-emprestimos" class="view-section">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>📋 Gestão de Empréstimos (Coleção <code>Emprestimos</code>)</span>
+            </div>
+            <button class="btn btn-primary" id="btn-novo-emprestimo">+ Contratar Empréstimo</button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Cliente</th>
+                  <th>CPF</th>
+                  <th>Conta</th>
+                  <th>Valor Contratado</th>
+                  <th>Taxa (%)</th>
+                  <th>Prazo</th>
+                  <th>Parcela Mensal</th>
+                  <th>Total a Pagar</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-emprestimos">
+                <tr>
+                  <td colspan="11">Carregando empréstimos...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- SEÇÃO 6: RELATÓRIOS & AGREGAÇÕES MONGODB -->
+      <!-- ============================================== -->
+      <section id="view-relatorios" class="view-section">
+        <!-- Requisito 4.1 -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>🔹 Requisito 4.1: Agrupamento e Métricas Financeiras ($group, $sum, $avg, $max)</span>
+            </div>
+            <span class="badge badge-primary">Coleção Contas</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            Agrupa as contas por tipo calculando a contagem de contas ($sum: 1), o saldo médio ($avg) e o maior saldo
+            registrado ($max).
+          </p>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tipo de Conta</th>
+                  <th>Número Total de Contas</th>
+                  <th>Média do Saldo ($avg)</th>
+                  <th>Maior Saldo Registrado ($max)</th>
+                  <th>Saldo Total Acumulado ($sum)</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-req-41">
+                <tr>
+                  <td colspan="5">Carregando agregação...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <pre class="code-box" id="code-req-41">// Pipeline MongoDB aggregate() executado no backend</pre>
+        </div>
+
+        <!-- Requisito 4.2 -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>🔹 Requisito 4.2: Desconstrução de Arrays e Contagem ($unwind e $sortByCount)</span>
+            </div>
+            <span class="badge badge-primary">Coleção Clientes</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            Desconstrói os elementos do array <code>seguros</code> ($unwind) e agrupa/ordena a quantidade de adesões aos
+            seguros por <code>genero</code> ($sortByCount).
+          </p>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Gênero</th>
+                  <th>Quantidade de Adesões a Seguros (Contratos Desconstruídos)</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-req-42">
+                <tr>
+                  <td colspan="2">Carregando agregação...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <pre class="code-box" id="code-req-42">// Pipeline MongoDB aggregate() executado no backend</pre>
+        </div>
+
+        <!-- Requisito 4.3 -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>🔹 Requisito 4.3: Filtragem e Agregação Combinada ($match e $group)</span>
+            </div>
+            <span class="badge badge-primary">Coleção Contas</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            Filtra apenas contas do tipo "Conta salário" com saldo estritamente maior que 3500 ($match) e totaliza as
+            contas elegíveis ($group).
+          </p>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Critério de Filtro ($match)</th>
+                  <th>Contas Elegíveis</th>
+                  <th>Saldo Total Acumulado</th>
+                  <th>Saldo Médio Elegível</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-req-43">
+                <tr>
+                  <td colspan="4">Carregando agregação...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <pre class="code-box" id="code-req-43">// Pipeline MongoDB aggregate() executado no backend</pre>
+        </div>
+
+        <!-- Requisito 4.4 -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <span>🔹 Requisito 4.4: Junção Externa à Esquerda ($lookup, $project, $limit)</span>
+            </div>
+            <span class="badge badge-primary">Clientes ⟕ Contas</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            Realiza $lookup da coleção <code>Clientes</code> para a coleção <code>Contas</code> usando <code>cpf</code>,
+            projeta apenas campos solicitados e limita a 5 resultados.
+          </p>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>CPF</th>
+                  <th>Email</th>
+                  <th>Contas Vinculadas (Subdocumentos Aninhados via $lookup)</th>
+                </tr>
+              </thead>
+              <tbody id="tabela-req-44">
+                <tr>
+                  <td colspan="4">Carregando agregação...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <pre class="code-box" id="code-req-44">// Pipeline MongoDB aggregate() executado no backend</pre>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAIS DE OPERAÇÃO -->
+  <!-- ============================================== -->
+
+  <!-- Modal: Novo Cliente -->
+  <div class="modal-overlay" id="modal-cliente">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-cliente-titulo">Cadastrar Novo Cliente</h3>
+        <button class="close-btn" onclick="fecharModais()">&times;</button>
+      </div>
+      <form id="form-cliente">
+        <div class="modal-body form-grid">
+          <div class="form-group">
+            <label>Nome Completo *</label>
+            <input type="text" id="cli-nome" class="form-control" required placeholder="Ex: Roberto Almeida">
+          </div>
+          <div class="form-group">
+            <label>CPF *</label>
+            <input type="text" id="cli-cpf" class="form-control" required placeholder="Ex: 123.456.789-00">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="cli-email" class="form-control" placeholder="nome@exemplo.com">
+          </div>
+          <div class="form-group">
+            <label>Telefone</label>
+            <input type="text" id="cli-telefone" class="form-control" placeholder="(47) 99999-8888">
+          </div>
+          <div class="form-group">
+            <label>Gênero</label>
+            <select id="cli-genero" class="form-control">
+              <option value="Feminino">Feminino</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Estado Civil</label>
+            <select id="cli-civil" class="form-control">
+              <option value="Solteiro(a)">Solteiro(a)</option>
+              <option value="Casado(a)">Casado(a)</option>
+              <option value="Viúvo(a)">Viúvo(a)</option>
+              <option value="Divorciado(a)">Divorciado(a)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Profissão</label>
+            <input type="text" id="cli-profissao" class="form-control" placeholder="Ex: Arquiteto de Software">
+          </div>
+          <div class="form-group">
+            <label>Renda Mensal (R$)</label>
+            <input type="number" step="0.01" id="cli-renda" class="form-control" placeholder="0.00">
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Seguros Contratados (Separados por vírgula)</label>
+            <input type="text" id="cli-seguros" class="form-control"
+              placeholder="seguro de vida, seguro residencial, seguro para carro">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModais()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar no MongoDB</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Nova Conta -->
+  <div class="modal-overlay" id="modal-conta">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Abertura de Conta Bancária</h3>
+        <button class="close-btn" onclick="fecharModais()">&times;</button>
+      </div>
+      <form id="form-conta">
+        <div class="modal-body form-grid">
+          <div class="form-group">
+            <label>CPF do Titular *</label>
+            <input type="text" id="conta-cpf" class="form-control" required placeholder="Selecione ou digite o CPF">
+          </div>
+          <div class="form-group">
+            <label>Número da Conta *</label>
+            <input type="text" id="conta-numero" class="form-control" required placeholder="Ex: 10003-1">
+          </div>
+          <div class="form-group">
+            <label>Agência *</label>
+            <input type="text" id="conta-agencia" class="form-control" required value="0001">
+          </div>
+          <div class="form-group">
+            <label>Tipo de Conta *</label>
+            <select id="conta-tipo" class="form-control" required>
+              <option value="Conta corrente">Conta corrente</option>
+              <option value="Conta poupança">Conta poupança</option>
+              <option value="Conta salário">Conta salário</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Saldo Inicial (R$)</label>
+            <input type="number" step="0.01" id="conta-saldo-inicial" class="form-control" value="0.00">
+          </div>
+          <div class="form-group">
+            <label>Limite Cheque Especial (R$)</label>
+            <input type="number" step="0.01" id="conta-limite" class="form-control" value="0.00">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModais()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Criar Conta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Nova Transação -->
+  <div class="modal-overlay" id="modal-transacao">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Registrar Movimentação Financeira</h3>
+        <button class="close-btn" onclick="fecharModais()">&times;</button>
+      </div>
+      <form id="form-transacao">
+        <div class="modal-body form-grid">
+          <div class="form-group">
+            <label>Tipo de Movimentação *</label>
+            <select id="trx-tipo" class="form-control" required>
+              <option value="Depósito">Depósito (Entrada)</option>
+              <option value="Saque">Saque (Saída)</option>
+              <option value="PIX">PIX (Transferência Imediata)</option>
+              <option value="Transferência">Transferência Bancária</option>
+              <option value="Pagamento">Pagamento de Conta</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Valor (R$) *</label>
+            <input type="number" step="0.01" id="trx-valor" class="form-control" required placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>Conta de Origem *</label>
+            <input type="text" id="trx-origem" class="form-control" required placeholder="Ex: 10001-5">
+          </div>
+          <div class="form-group" id="group-trx-destino">
+            <label>Conta de Destino (PIX/Transferência)</label>
+            <input type="text" id="trx-destino" class="form-control" placeholder="Ex: 20001-8">
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Descrição da Operação</label>
+            <input type="text" id="trx-descricao" class="form-control"
+              placeholder="Ex: Pagamento de serviços prestados">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModais()">Cancelar</button>
+          <button type="submit" class="btn btn-success">Efetivar Operação</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Novo Empréstimo -->
+  <div class="modal-overlay" id="modal-emprestimo">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Contratar Empréstimo Bancário</h3>
+        <button class="close-btn" onclick="fecharModais()">&times;</button>
+      </div>
+      <form id="form-emprestimo">
+        <div class="modal-body form-grid">
+          <div class="form-group">
+            <label>CPF do Cliente *</label>
+            <input type="text" id="emp-cpf" class="form-control" required placeholder="Ex: 888.568.498-01">
+          </div>
+          <div class="form-group">
+            <label>Conta Bancária para Crédito *</label>
+            <input type="text" id="emp-conta" class="form-control" required placeholder="Ex: 10001-5">
+          </div>
+          <div class="form-group">
+            <label>Valor Solicitado (R$) *</label>
+            <input type="number" step="0.01" id="emp-valor" class="form-control" required placeholder="Ex: 20000.00">
+          </div>
+          <div class="form-group">
+            <label>Prazo em Meses *</label>
+            <select id="emp-prazo" class="form-control" required>
+              <option value="12">12 meses</option>
+              <option value="24">24 meses</option>
+              <option value="36">36 meses</option>
+              <option value="48">48 meses</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Taxa de Juros Mensal (%)</label>
+            <input type="number" step="0.05" id="emp-taxa" class="form-control" value="1.85">
+          </div>
+          <div class="form-group">
+            <label>Finalidade</label>
+            <input type="text" id="emp-finalidade" class="form-control" placeholder="Ex: Reforma ou Investimento">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModais()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Aprovar e Creditar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toasts"></div>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
